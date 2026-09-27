@@ -68,8 +68,76 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // 3. Initialize 3D Survival Horror Engine
-  if (window.SurvivalGame3D && document.getElementById('game3DContainer')) {
-    window.game3D = new window.SurvivalGame3D('game3DContainer');
+  try {
+    if (window.SurvivalGame3D && document.getElementById('game3DContainer')) {
+      window.game3D = new window.SurvivalGame3D('game3DContainer');
+    }
+  } catch (err) {
+    console.error("Failed to initialize 3D WebGL engine:", err);
+    const container = document.getElementById('game3DContainer');
+    if (container) {
+      const errBox = document.createElement('div');
+      errBox.style.cssText = 'position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(10,14,20,0.92); z-index:90; padding:20px;';
+      errBox.innerHTML = `
+        <div style="background: rgba(230, 57, 70, 0.15); border: 1px solid var(--accent-crimson); padding: 24px; border-radius: 8px; text-align: center; max-width: 520px;">
+          <h3 style="color: var(--accent-crimson); font-family: var(--font-display); margin-bottom: 8px;">3D ENGINE INITIALIZATION NOTICE</h3>
+          <p style="color: var(--text-muted); font-size: 13px; line-height: 1.5; margin-bottom: 16px;">
+            Hardware WebGL acceleration could not be started in this browser session (${err.message || 'Context Error'}).
+            The game simulation is still 100% active in the tabs above!
+          </p>
+          <button id="btnFallbackToArena" class="cyber-btn" style="border-color:var(--accent-cyan); color:var(--accent-cyan);">🗺️ OPEN 2D TACTICAL RADAR SIMULATOR</button>
+        </div>
+      `;
+      container.appendChild(errBox);
+      const fb = document.getElementById('btnFallbackToArena');
+      if (fb) fb.addEventListener('click', () => document.querySelector('[data-tab="arenaTab"]')?.click());
+    }
+  }
+
+  // Hook Start Game & Drone Buttons in Overlay
+  const btnStartPlay = document.getElementById('btnStartGamePlay');
+  if (btnStartPlay) {
+    btnStartPlay.addEventListener('click', () => {
+      if (window.horrorAudio) window.horrorAudio.init();
+      const playOverlay = document.getElementById('clickToPlayOverlay');
+      if (playOverlay) playOverlay.style.display = 'none';
+
+      if (window.game3D) {
+        window.game3D.hasStartedGame = true;
+        if (window.game3D.renderer && window.game3D.renderer.domElement) {
+          try {
+            window.game3D.renderer.domElement.requestPointerLock();
+          } catch (e) {
+            console.warn("Pointer lock request:", e);
+          }
+        }
+      }
+      window.showToast("🎮 SURVIVAL ZONE ENGAGED! Move with WASD, Click/Drag to look around.", "#00f5d4");
+    });
+  }
+
+  const btnQuickDrone = document.getElementById('btnQuickDroneStart');
+  if (btnQuickDrone) {
+    btnQuickDrone.addEventListener('click', () => {
+      if (window.horrorAudio) window.horrorAudio.init();
+      const playOverlay = document.getElementById('clickToPlayOverlay');
+      if (playOverlay) playOverlay.style.display = 'none';
+
+      if (window.game3D) {
+        window.game3D.hasStartedGame = true;
+        window.game3D.cameraMode = 'drone';
+        window.game3D.drone.position.set(window.game3D.playerGroup.position.x, 80, window.game3D.playerGroup.position.z + 30);
+        window.game3D.drone.pitch = -0.5;
+        const btnD = document.getElementById('btnToggleDrone');
+        if (btnD) btnD.classList.add('active');
+        if (window.game3D.renderer && window.game3D.renderer.domElement) {
+          try {
+            window.game3D.renderer.domElement.requestPointerLock();
+          } catch (e) {}
+        }
+      }
+      window.showToast("🛸 DRONE FLIGHT ACTIVE: WASD to fly across the city, Space/Shift for Altitude!", "#00f5d4");
+    });
   }
 
   // 4. Start 2D Tactical Arena Simulation (if canvas present)
