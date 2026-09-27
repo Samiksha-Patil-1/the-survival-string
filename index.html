@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Survival String — AAA Horror Systems & Simulation</title>
+  <meta name="description" content="Interactive web simulation for The Survival String: Graph-Based State Machine, Player Behavior Mirror AI Director, Organic Infection, and Base Heat Attraction.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+  <!-- Scanline & Grain FX Overlay -->
+  <div class="crt-overlay"></div>
+  <div id="infectionOverlay" class="infection-postprocess"></div>
+
+  <!-- Header -->
+  <header class="cyber-header">
+    <div class="header-left">
+      <div class="logo-mark">
+        <span class="icon-pulse"></span>
+        <span class="logo-text">THE SURVIVAL STRING</span>
+      </div>
+      <span class="version-tag">UNITY 6 ARCHITECTURE • LIVE SIMULATOR</span>
+    </div>
+
+    <div class="header-center">
+      <div class="hud-ticker">
+        <span class="ticker-label">DIRECTOR:</span>
+        <span id="tickerDirector" class="ticker-val archetype-hunter">HUNTER MATRIX</span>
+        <span class="ticker-sep">|</span>
+        <span class="ticker-label">BASE HEAT:</span>
+        <span id="tickerHeat" class="ticker-val heat-medium">45.0 (RAD: 90m)</span>
+        <span class="ticker-sep">|</span>
+        <span class="ticker-label">INFECTION:</span>
+        <span id="tickerInfection" class="ticker-val infection-low">0.0%</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <button id="btnAudioToggle" class="cyber-btn btn-audio">
+        <span class="audio-icon">🔊</span> <span id="audioBtnText">AUDIO FX: ON</span>
+      </button>
+      <a href="https://github.com/Samiksha-Patil-1/the-survival-string" target="_blank" class="cyber-btn btn-github">
+        <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GITHUB REPO</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="system-nav">
+    <button class="nav-tab active" data-tab="arenaTab">
+      <span class="tab-num">01</span>
+      <span class="tab-title">🎮 LIVE PLAYABLE ARENA</span>
+      <span class="tab-sub">Interactive 2D Simulation</span>
+    </button>
+    <button class="nav-tab" data-tab="stringTab">
+      <span class="tab-num">02</span>
+      <span class="tab-title">🕸️ THE SURVIVAL STRING</span>
+      <span class="tab-sub">DAG Narrative Graph</span>
+    </button>
+    <button class="nav-tab" data-tab="directorTab">
+      <span class="tab-num">03</span>
+      <span class="tab-title">🧠 BEHAVIOR MIRROR</span>
+      <span class="tab-sub">AI Director & Telemetry</span>
+    </button>
+    <button class="nav-tab" data-tab="heatTab">
+      <span class="tab-num">04</span>
+      <span class="tab-title">🔥 BASE HEAT SYSTEM</span>
+      <span class="tab-sub">Dynamic Horde Attraction</span>
+    </button>
+    <button class="nav-tab" data-tab="infectionTab">
+      <span class="tab-num">05</span>
+      <span class="tab-title">🩸 ORGANIC INFECTION</span>
+      <span class="tab-sub">Shader & Audio Degradation</span>
+    </button>
+  </nav>
+
+  <!-- Main Viewports -->
+  <main class="app-main">
+
+    <!-- TAB 1: PLAYABLE LIVE ARENA SIMULATOR -->
+    <section id="arenaTab" class="view-panel active">
+      <div class="arena-layout">
+        <!-- Canvas Viewport -->
+        <div class="arena-canvas-container">
+          <canvas id="arenaCanvas" width="960" height="600"></canvas>
+          <div class="arena-hud-overlay">
+            <div class="hud-box">
+              <span class="hud-title">SURVIVOR STATUS</span>
+              <div class="hud-stat-row">
+                <span>STAMINA:</span>
+                <div class="progress-bar"><div id="hudStaminaBar" class="progress-fill stamina"></div></div>
+              </div>
+              <div class="hud-stat-row">
+                <span>INFECTION:</span>
+                <div class="progress-bar"><div id="hudInfectionBar" class="progress-fill infection"></div></div>
+              </div>
+              <div class="hud-stat-row">
+                <span>POSTURE:</span>
+                <span id="hudPosture" class="hud-tag">STANDING</span>
+              </div>
+            </div>
+
+            <div class="hud-box controls-guide">
+              <span class="hud-title">INPUT CONTROLS</span>
+              <p><b>W / A / S / D</b> : Move Survivor</p>
+              <p><b>C</b> : Toggle Crouch (Stealth)</p>
+              <p><b>SHIFT</b> : Sprint (Speed & Noise)</p>
+              <p><b>LEFT CLICK / SPACE</b> : Fire Weapon</p>
+              <p><b>E</b> : Interact (Loot Caches / Toggle Generator)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arena Control Sidebar -->
+        <aside class="arena-sidebar">
+          <div class="panel-card glass-panel">
+            <h3 class="card-title">LIVE TELEMETRY READOUT</h3>
+            <p class="card-desc">Action sampling window evaluates player habits every 5 seconds.</p>
+
+            <div class="score-row">
+              <span class="score-name">STEALTH SCORE:</span>
+              <div class="score-bar-bg"><div id="barStealth" class="score-bar-fill stealth" style="width: 25%"></div></div>
+              <span id="valStealth" class="score-number">25%</span>
+            </div>
+
+            <div class="score-row">
+              <span class="score-name">AGGRESSION SCORE:</span>
+              <div class="score-bar-bg"><div id="barAggression" class="score-bar-fill aggression" style="width: 25%"></div></div>
+              <span id="valAggression" class="score-number">25%</span>
+            </div>
+
+            <div class="score-row">
+              <span class="score-name">LOOTING SCORE:</span>
+              <div class="score-bar-bg"><div id="barLooting" class="score-bar-fill looting" style="width: 25%"></div></div>
+              <span id="valLooting" class="score-number">25%</span>
+            </div>
+
+            <div class="score-row">
+              <span class="score-name">BASE BUILDING SCORE:</span>
+              <div class="score-bar-bg"><div id="barBuilding" class="score-bar-fill building" style="width: 25%"></div></div>
+              <span id="valBuilding" class="score-number">25%</span>
+            </div>
+
+            <div class="director-banner">
+              <span class="banner-sub">ACTIVE AI DIRECTOR ARCHETYPE:</span>
+              <span id="arenaActiveArchetype" class="banner-highlight">HUNTER</span>
+              <span id="arenaArchetypeDesc" class="banner-detail">Counters scavenging habits along supply routes.</span>
+            </div>
+          </div>
+
+          <div class="panel-card glass-panel">
+            <h3 class="card-title">SAFEHOUSE HEAT MANAGER</h3>
+            <div class="stat-pill-row">
+              <div class="stat-pill">
+                <span class="pill-label">TOTAL HEAT</span>
+                <span id="arenaTotalHeat" class="pill-val">35.0</span>
+              </div>
+              <div class="stat-pill">
+                <span class="pill-label">PULL RADIUS</span>
+                <span id="arenaPullRadius" class="pill-val">70.0m</span>
+              </div>
+            </div>
+
+            <div class="toggle-group">
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggleArenaGen" checked>
+                <span class="slider"></span>
+                <span class="label-text">Diesel Generator (+35 Heat)</span>
+              </label>
+
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggleArenaRadio" checked>
+                <span class="slider"></span>
+                <span class="label-text">Emergency Radio (+15 Heat)</span>
+              </label>
+
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggleArenaLights" checked>
+                <span class="slider"></span>
+                <span class="label-text">Perimeter Floodlights (+20 Heat)</span>
+              </label>
+            </div>
+
+            <button id="btnSpawnHorde" class="action-btn-red">⚠️ TRIGGER NOISE HORDE EVENT</button>
+            <button id="btnResetArena" class="action-btn-secondary">RESET SIMULATION</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- TAB 2: THE SURVIVAL STRING (DAG GRAPH) -->
+    <section id="stringTab" class="view-panel">
+      <div class="graph-layout">
+        <div class="graph-canvas-wrapper glass-panel">
+          <div class="graph-header">
+            <div>
+              <h2>DIRECTED ACYCLIC GRAPH (DAG) STATE MACHINE</h2>
+              <p>Every choice creates a node with edges unlocking future world states and triggering UnityEvents.</p>
+            </div>
+            <div class="graph-actions">
+              <button id="btnExportGraphJson" class="cyber-btn">💾 EXPORT GRAPH JSON</button>
+              <button id="btnResetGraph" class="cyber-btn btn-danger">↺ RESET GRAPH</button>
+            </div>
+          </div>
+          <canvas id="dagCanvas" width="900" height="520"></canvas>
+          <div class="canvas-legend">
+            <span><span class="dot unlocked"></span> Committed Node</span>
+            <span><span class="dot available"></span> Available Edge</span>
+            <span><span class="dot locked"></span> Locked Prerequisite</span>
+            <span><span class="dot blocked"></span> Mutually Exclusive</span>
+          </div>
+        </div>
+
+        <div class="graph-inspector glass-panel">
+          <h3 class="inspector-title">SELECTED NODE INSPECTOR</h3>
+          <div id="inspectorContent">
+            <p class="empty-hint">Click any node in the graph to inspect its ScriptableObject definition and execute activation events.</p>
+          </div>
+          <div class="concept-preview">
+            <span class="preview-tag">DESIGN CONCEPT ART</span>
+            <img src="Assets/Art/Concepts/survival_string_menu_1790488388736.jpg" alt="The Survival String Concept Art" class="img-preview" id="imgConceptModal">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: BEHAVIOR MIRROR & TELEMETRY -->
+    <section id="directorTab" class="view-panel">
+      <div class="director-layout">
+        <div class="telemetry-col glass-panel">
+          <h2>PLAYER TELEMETRY 4D RADAR</h2>
+          <p>Mathematical vector normalization updated dynamically based on real-time ingame actions.</p>
+          
+          <div class="radar-container">
+            <canvas id="radarCanvas" width="380" height="380"></canvas>
+          </div>
+
+          <div class="manual-sim-controls">
+            <h4>SIMULATE TELEMETRY INGESTION:</h4>
+            <div class="slider-control">
+              <label>Stealth (Crouch Time): <span id="lblSimStealth">25%</span></label>
+              <input type="range" id="sliderStealth" min="0" max="100" value="25">
+            </div>
+            <div class="slider-control">
+              <label>Aggression (Shots Fired): <span id="lblSimAggression">25%</span></label>
+              <input type="range" id="sliderAggression" min="0" max="100" value="25">
+            </div>
+            <div class="slider-control">
+              <label>Looting (Containers Opened): <span id="lblSimLooting">25%</span></label>
+              <input type="range" id="sliderLooting" min="0" max="100" value="25">
+            </div>
+            <div class="slider-control">
+              <label>Base Building (Fortifications): <span id="lblSimBuilding">25%</span></label>
+              <input type="range" id="sliderBuilding" min="0" max="100" value="25">
+            </div>
+          </div>
+        </div>
+
+        <div class="archetypes-col glass-panel">
+          <h2>AI DIRECTOR ENCOUNTER MATRICES</h2>
+          <p>The Director activates specific enemy mutations when a playstyle dominates by &gt;40%.</p>
+
+          <div class="archetype-cards">
+            <!-- Swarm Card -->
+            <div id="cardSwarm" class="archetype-card">
+              <div class="card-badge">COUNTERS AGGRESSION</div>
+              <h3 class="archetype-name">SOUND-ADAPTED SWARMER</h3>
+              <p class="archetype-lore">Blind stalker with top face calcified in hardened bone. Overgrown bat-like ears detect gunfire and sprinting across hundreds of meters.</p>
+              <div class="stat-spec">
+                <span>PULL METHOD: Acoustic NavMesh Vector</span>
+                <span>SPAWN CHANCE: <b>85%</b> (Aggression &gt;40%)</span>
+              </div>
+            </div>
+
+            <!-- Ambusher Card -->
+            <div id="cardAmbusher" class="archetype-card">
+              <div class="card-badge">COUNTERS STEALTH</div>
+              <h3 class="archetype-name">CEILING-CRAWLING AMBUSHER</h3>
+              <p class="archetype-lore">Skinny predator with dark charcoal skin and elongated bone-claws. Clings to rafters and vents, dropping down directly on crouched players.</p>
+              <div class="stat-spec">
+                <span>PULL METHOD: Vertical Drop NavMesh Link</span>
+                <span>SPAWN CHANCE: <b>85%</b> (Stealth &gt;40%)</span>
+              </div>
+            </div>
+
+            <!-- Hunter Card -->
+            <div id="cardHunter" class="archetype-card active">
+              <div class="card-badge">COUNTERS LOOTING / BALANCED</div>
+              <h3 class="archetype-name">RELENTLESS TRACKER</h3>
+              <p class="archetype-lore">Fast, persistent tracker that patrols supply caches and intercept corridors. Tracks scents and opens containers left behind.</p>
+              <div class="stat-spec">
+                <span>PULL METHOD: Supply Path Interception</span>
+                <span>SPAWN CHANCE: <b>65%</b> (Default / Scavenging)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="gameplay-concept-row">
+            <img src="Assets/Art/Concepts/behavior_mirror_mockup_1790488440893.jpg" alt="Behavior Mirror Gameplay Mockup" class="concept-wide">
+            <div class="concept-caption">
+              <b>Gameplay Mockup:</b> Survivor hiding under a desk with a silenced pistol while a Sound-Adapted Swarmer listens for footsteps.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: BASE HEAT SYSTEM -->
+    <section id="heatTab" class="view-panel">
+      <div class="heat-layout">
+        <div class="heat-radar-wrapper glass-panel">
+          <div class="graph-header">
+            <div>
+              <h2>DYNAMIC BASE HEAT ATTRACTION RADAR</h2>
+              <p>Formula: <code>SphereCollider.Radius = TotalHeat * 2.0m</code>. Any zombie entering the sphere targets the Safehouse door.</p>
+            </div>
+          </div>
+          <canvas id="heatRadarCanvas" width="640" height="540"></canvas>
+        </div>
+
+        <div class="heat-controls-wrapper glass-panel">
+          <h3>APPLIANCE HEAT SOURCES</h3>
+          <p>Every active generator, radio, workbench, and floodlight increases base heat, pulling the horde.</p>
+
+          <div id="heatSourceList" class="heat-source-list">
+            <!-- Dynamically populated or rendered -->
+          </div>
+
+          <div class="heat-readout-card">
+            <div class="metric-row">
+              <span>TOTAL ACCUMULATED HEAT:</span>
+              <span id="radarTotalHeatVal" class="metric-value">70.0</span>
+            </div>
+            <div class="metric-row">
+              <span>DYNAMIC TRIGGER RADIUS:</span>
+              <span id="radarRadiusVal" class="metric-value">140.0 meters</span>
+            </div>
+            <div class="metric-row">
+              <span>ZOMBIES IN PERIMETER:</span>
+              <span id="radarZombiesDrawn" class="metric-value highlight">0</span>
+            </div>
+          </div>
+
+          <button id="btnPulseHeat" class="cyber-btn">⚡ OVERCHARGE GENERATOR (+40 HEAT)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: ORGANIC INFECTION SYSTEM -->
+    <section id="infectionTab" class="view-panel">
+      <div class="infection-layout">
+        <div class="viewport-wrapper glass-panel">
+          <div class="graph-header">
+            <div>
+              <h2>ORGANIC INFECTION SENSORY EXPERIENCE</h2>
+              <p>No health bars or UI. Perceived solely through visual aberration, vignette, and psychoacoustic audio muffling.</p>
+            </div>
+          </div>
+
+          <div class="simulated-screen" id="simScreen">
+            <img src="Assets/Art/Concepts/day_seven_chaos_1790488413008.jpg" alt="Day 7 Chaos" class="screen-bg" id="screenBgImg">
+            <div class="screen-vignette" id="screenVignette"></div>
+            <div class="screen-chromatic" id="screenChromatic"></div>
+            <canvas id="bioVeinCanvas" width="800" height="450"></canvas>
+            <div class="fov-indicator" id="fovIndicator">FOV: 65.0°</div>
+          </div>
+        </div>
+
+        <div class="infection-sidebar glass-panel">
+          <h3>INFECTION CONTROLS (0.0 — 100.0)</h3>
+          <p>Adjust the slider to preview real-time shader properties and audio mixer changes.</p>
+
+          <div class="infection-slider-box">
+            <div class="slider-val-readout">
+              <span>INFECTION LEVEL:</span>
+              <span id="infectionValText" class="infection-pct">0.0%</span>
+            </div>
+            <input type="range" id="sliderInfectionLevel" min="0" max="100" value="0" step="0.5">
+          </div>
+
+          <div class="sensory-checklist">
+            <h4>DIAGNOSTIC MANIFESTATIONS:</h4>
+            <div class="check-item">
+              <span class="check-dot" id="dotAberration"></span>
+              <span>Chromatic Aberration Dispersion: <b id="lblAberration">0.0%</b></span>
+            </div>
+            <div class="check-item">
+              <span class="check-dot" id="dotVeins"></span>
+              <span>Bio-Vein Tendril Infiltration: <b id="lblVeins">0.0%</b></span>
+            </div>
+            <div class="check-item">
+              <span class="check-dot" id="dotAudioLPF"></span>
+              <span>Audio Mixer Low-Pass Filter: <b id="lblAudioLPF">22,000 Hz (Crisp)</b></span>
+            </div>
+            <div class="check-item">
+              <span class="check-dot" id="dotWhispers"></span>
+              <span>Binaural Whisper Hallucinations: <b id="lblWhispers">INACTIVE (&lt;50%)</b></span>
+            </div>
+          </div>
+
+          <div class="btn-grid-row">
+            <button id="btnInfect25" class="action-btn-red">+25% INFECTION</button>
+            <button id="btnCure25" class="cyber-btn">-25% ANTIVIRAL</button>
+            <button id="btnResetInfection" class="action-btn-secondary">RESET TO 0%</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toastNotification" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="audio.js"></script>
+  <script src="simulation.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
