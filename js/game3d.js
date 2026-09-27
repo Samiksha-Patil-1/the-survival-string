@@ -404,6 +404,20 @@ class SurvivalGame3D {
     });
   }
 
+  resetSupplyCrates() {
+    for (let obj of this.interactiveObjects) {
+      if (obj.type === 'crate' && obj.mesh) {
+        this.scene.remove(obj.mesh);
+      }
+    }
+    this.interactiveObjects = this.interactiveObjects.filter(obj => obj.type !== 'crate');
+
+    this.createSupplyCrate(20, -42, 'medical');
+    this.createSupplyCrate(50, 35, 'ammo');
+    this.createSupplyCrate(-45, 35, 'rations');
+    this.createSupplyCrate(0, -25, 'ammo');
+  }
+
   /* ========================================================================
      4. ANIMATED 3D SURVIVOR & WEAPONS (Alexei)
      ======================================================================== */
@@ -1223,9 +1237,22 @@ class SurvivalGame3D {
   }
 
   replayGame() {
+    // 1. Terminate previous session flags and controllers
     this.isGameOver = false;
     this.zombiesKilled = 0;
+    this.keys = {};
+    this.mouse.isDragging = false;
+    this.hasStartedGame = true;
+    this.walkCycle = 0;
+    this.swingAnim = 0;
+    if (this._huntedBannerTimer) {
+      clearTimeout(this._huntedBannerTimer);
+      this._huntedBannerTimer = null;
+    }
+
+    // 2. Reset Player Vitals & Loadout
     this.playerStats.health = 100;
+    this.playerStats.maxHealth = 100;
     this.playerStats.stamina = 100;
     this.playerStats.hunger = 90;
     this.playerStats.thirst = 85;
@@ -1234,43 +1261,95 @@ class SurvivalGame3D {
     this.playerStats.isCrouching = false;
     this.playerStats.isSprinting = false;
     this.playerStats.isAttacking = false;
+    this.playerStats.isAiming = false;
+    this.playerStats.isReloading = false;
+    this.playerStats.noiseLevel = 0;
+    this.playerStats.dominantArchetype = 'Hunter';
 
+    // 3. Reset Weapon to Suppressed Pistol and Camera to Ground View
+    this.switchWeapon('pistol');
+    this.cameraMode = 'fps';
+    this.camera.fov = 65;
+    this.camera.updateProjectionMatrix();
+
+    // Sync Toolbar button active states
+    const droneBtn = document.getElementById('btnToggleDrone');
+    if (droneBtn) droneBtn.classList.remove('active');
+    const pistolBtn = document.getElementById('btnEquipPistol');
+    if (pistolBtn) pistolBtn.classList.add('active');
+    const batBtn = document.getElementById('btnEquipBat');
+    if (batBtn) batBtn.classList.remove('active');
+
+    // 4. Reset Temporal Clock to Day 1, 10:00 AM (Daylight)
     this.currentDay = 1;
     this.gameTime = 10.0;
     this.yaw = 0;
     this.pitch = 0;
 
-    // Reset player position to safehouse entrance
+    // 5. Teleport Alexei to Safehouse Entrance
     this.playerGroup.position.set(-25, 0, -10);
+    this.playerGroup.rotation.y = 0;
+    if (this.playerLegL && this.playerLegR) {
+      this.playerLegL.rotation.x = 0;
+      this.playerLegR.rotation.x = 0;
+    }
 
-    // Clear and respawn fresh zombies
+    // 6. Purge ALL Existing Zombies & Spawn Fresh Horde
     for (let z of this.zombies) {
-      this.scene.remove(z.mesh);
+      if (z.mesh) this.scene.remove(z.mesh);
     }
     this.zombies = [];
     this.initZombies();
 
-    // Reset base heat
+    // 7. Reset Supply Crates & Dialogue states
+    this.resetSupplyCrates();
+    for (let s of this.survivors) {
+      s.idx = 0;
+    }
+
+    // 8. Reset Base Heat & Generator
     this.baseHeat.generatorActive = true;
     this.updateHeatDome();
 
-    // Reset infection visual effects
+    // 9. Reset Infection Sensory Post-Processing & Audio
     if (window.setGlobalInfection) window.setGlobalInfection(0);
+    if (window.horrorAudio) {
+      window.horrorAudio.setInfectionCutoff(0);
+      window.horrorAudio.toggleGeneratorHum(true);
+    }
 
-    // Hide modals
+    // 10. Close all modals, dialogue popups, and alerts
     const modal = document.getElementById('gameOverModal');
     if (modal) modal.style.display = 'none';
+
+    const pOverlay = document.getElementById('clickToPlayOverlay');
+    if (pOverlay) pOverlay.style.display = 'none';
 
     const banner = document.getElementById('huntedWarningBanner');
     if (banner) banner.style.display = 'none';
 
-    // Lock pointer to jump right back in
+    const dModal = document.getElementById('survivorDialogueModal');
+    if (dModal) dModal.style.display = 'none';
+
+    const dmgFlash = document.getElementById('damageFlashOverlay');
+    if (dmgFlash) dmgFlash.style.opacity = '0';
+
+    // 11. Reset Narrative DAG Graph
+    const resetGraphBtn = document.getElementById('btnResetGraph');
+    if (resetGraphBtn) resetGraphBtn.click();
+
+    // 12. Instant HUD update
+    this.updateHUD();
+    const dayEl = document.getElementById('hudDayTime');
+    if (dayEl) dayEl.textContent = 'DAY 1 | 10:00';
+
+    // 13. Auto lock pointer
     if (this.renderer && this.renderer.domElement) {
       try { this.renderer.domElement.requestPointerLock(); } catch (e) {}
     }
 
     if (window.showToast) {
-      window.showToast("↺ Mission Restarted: Day 1 begins. Stay alive, Alexei!", "#00f5d4");
+      window.showToast("↺ SESSION RESTARTED • PREVIOUS RUN TERMINATED • DAY 1 BEGUN!", "#00f5d4");
     }
   }
 
