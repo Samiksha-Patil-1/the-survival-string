@@ -161,6 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnReplay = document.getElementById('btnReplayGame');
   if (btnReplay) btnReplay.addEventListener('click', triggerGameRestart);
 
+  const btnHardReload = document.getElementById('btnHardReloadGameOver');
+  if (btnHardReload) {
+    btnHardReload.addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
+
   const btnExploreDeath = document.getElementById('btnExploreGraphFromDeath');
   if (btnExploreDeath) {
     btnExploreDeath.addEventListener('click', () => {

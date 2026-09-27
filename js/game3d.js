@@ -100,6 +100,7 @@ class SurvivalGame3D {
     this.swingAnim = 0;
     this.currentInteraction = null;
     this.hasStartedGame = false;
+    this.isPaused = false;
     this.zombiesKilled = 0;
     this.isGameOver = false;
     this.lastHuntedAlertTime = 0;
@@ -683,6 +684,7 @@ class SurvivalGame3D {
       if (e.key === '1') this.switchWeapon('pistol');
       if (e.key === '2') this.switchWeapon('bat');
       if (e.key.toLowerCase() === 'r') this.reloadWeapon();
+      if (e.key.toLowerCase() === 'p') this.togglePause();
     });
 
     window.addEventListener('keyup', (e) => {
@@ -719,7 +721,8 @@ class SurvivalGame3D {
         if (this.mouse.isLocked) {
           playOverlay.style.display = 'none';
           this.hasStartedGame = true;
-        } else if (this.hasStartedGame) {
+          this.isPaused = false;
+        } else if (this.isPaused) {
           const btn = document.getElementById('btnStartGamePlay');
           if (btn) {
             btn.innerHTML = '<span class="btn-play-icon">▶</span><span>RESUME SURVIVAL (CLICK TO LOCK)</span>';
@@ -1236,9 +1239,30 @@ class SurvivalGame3D {
     }
   }
 
+  togglePause() {
+    this.isPaused = !this.isPaused;
+    const playOverlay = document.getElementById('clickToPlayOverlay');
+    if (playOverlay) {
+      if (this.isPaused) {
+        if (document.exitPointerLock) {
+          try { document.exitPointerLock(); } catch (err) {}
+        }
+        const btn = document.getElementById('btnStartGamePlay');
+        if (btn) btn.innerHTML = '<span class="btn-play-icon">▶</span><span>RESUME SURVIVAL (CLICK TO LOCK)</span>';
+        playOverlay.style.display = 'flex';
+      } else {
+        playOverlay.style.display = 'none';
+        if (this.renderer && this.renderer.domElement) {
+          try { this.renderer.domElement.requestPointerLock(); } catch (e) {}
+        }
+      }
+    }
+  }
+
   replayGame() {
     // 1. Terminate previous session flags and controllers
     this.isGameOver = false;
+    this.isPaused = false;
     this.zombiesKilled = 0;
     this.keys = {};
     this.mouse.isDragging = false;
