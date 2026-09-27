@@ -140,13 +140,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Hook Replay & Explore Buttons in Game Over Modal
+  // Hook Restart & Replay Buttons across all HUD & Modals
+  const triggerGameRestart = () => {
+    const playOverlay = document.getElementById('clickToPlayOverlay');
+    if (playOverlay) playOverlay.style.display = 'none';
+    const gModal = document.getElementById('gameOverModal');
+    if (gModal) gModal.style.display = 'none';
+
+    if (window.game3D) {
+      window.game3D.replayGame();
+    }
+  };
+
+  const btnRestartHud = document.getElementById('btnRestartGameHud');
+  if (btnRestartHud) btnRestartHud.addEventListener('click', triggerGameRestart);
+
+  const btnRestartPause = document.getElementById('btnRestartFromPause');
+  if (btnRestartPause) btnRestartPause.addEventListener('click', triggerGameRestart);
+
   const btnReplay = document.getElementById('btnReplayGame');
-  if (btnReplay) {
-    btnReplay.addEventListener('click', () => {
-      if (window.game3D) window.game3D.replayGame();
-    });
-  }
+  if (btnReplay) btnReplay.addEventListener('click', triggerGameRestart);
 
   const btnExploreDeath = document.getElementById('btnExploreGraphFromDeath');
   if (btnExploreDeath) {

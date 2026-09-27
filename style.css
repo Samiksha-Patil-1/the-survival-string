@@ -400,6 +400,31 @@ body.dark-theme {
   color: var(--accent-cyan);
 }
 
+.btn-restart-hud {
+  background: rgba(230, 57, 70, 0.15) !important;
+  border-color: rgba(230, 57, 70, 0.4) !important;
+  color: #ff6b7a !important;
+}
+
+.btn-restart-hud:hover {
+  background: var(--accent-crimson) !important;
+  border-color: var(--accent-crimson) !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px var(--accent-crimson-glow);
+}
+
+.btn-restart-pause {
+  background: rgba(230, 57, 70, 0.15) !important;
+  border-color: rgba(230, 57, 70, 0.5) !important;
+  color: #ff6b7a !important;
+}
+
+.btn-restart-pause:hover {
+  background: var(--accent-crimson) !important;
+  color: #fff !important;
+  box-shadow: 0 0 14px var(--accent-crimson-glow);
+}
+
 /* Center Crosshair */
 .crosshair-center {
   position: absolute;
