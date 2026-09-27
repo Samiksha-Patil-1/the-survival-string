@@ -67,36 +67,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 3. Start Live Playable Arena
-  const arena = new window.ArenaSimulation('arenaCanvas');
-  arena.start();
+  // 3. Initialize 3D Survival Horror Engine
+  if (window.SurvivalGame3D && document.getElementById('game3DContainer')) {
+    window.game3D = new window.SurvivalGame3D('game3DContainer');
+  }
 
-  // Arena Sidebar Toggles
-  document.getElementById('toggleArenaGen').addEventListener('change', (e) => {
-    arena.safehouse.generatorActive = e.target.checked;
-    arena.recalculateHeat();
-    if (window.horrorAudio) window.horrorAudio.toggleGeneratorHum(e.target.checked);
-  });
-  document.getElementById('toggleArenaRadio').addEventListener('change', (e) => {
-    arena.safehouse.radioActive = e.target.checked;
-    arena.recalculateHeat();
-  });
-  document.getElementById('toggleArenaLights').addEventListener('change', (e) => {
-    arena.safehouse.lightsActive = e.target.checked;
-    arena.recalculateHeat();
-  });
-  document.getElementById('btnSpawnHorde').addEventListener('click', () => {
-    for (let i = 0; i < 8; i++) arena.spawnZombie('Swarm');
-    window.showToast("⚠️ Aggression Horde Spawned (8 Sound-Adapted Swarmers)!", "#e63946");
-    if (window.horrorAudio) window.horrorAudio.playGunshot();
-  });
-  document.getElementById('btnResetArena').addEventListener('click', () => {
-    arena.initEntities();
-    arena.player.infection = 0;
-    document.getElementById('hudInfectionBar').style.width = '0%';
-    document.getElementById('tickerInfection').textContent = '0.0%';
-    window.showToast("Arena Simulation Reset", "#00f5d4");
-  });
+  // 4. Start 2D Tactical Arena Simulation (if canvas present)
+  let arena = null;
+  if (window.ArenaSimulation && document.getElementById('arenaCanvas')) {
+    arena = new window.ArenaSimulation('arenaCanvas');
+    arena.start();
+  }
+
+  // Arena Sidebar Toggles (with safe null checks)
+  const tGen = document.getElementById('toggleArenaGen');
+  if (tGen && arena) {
+    tGen.addEventListener('change', (e) => {
+      arena.safehouse.generatorActive = e.target.checked;
+      arena.recalculateHeat();
+      if (window.horrorAudio) window.horrorAudio.toggleGeneratorHum(e.target.checked);
+    });
+  }
+  const tRadio = document.getElementById('toggleArenaRadio');
+  if (tRadio && arena) {
+    tRadio.addEventListener('change', (e) => {
+      arena.safehouse.radioActive = e.target.checked;
+      arena.recalculateHeat();
+    });
+  }
+  const tLights = document.getElementById('toggleArenaLights');
+  if (tLights && arena) {
+    tLights.addEventListener('change', (e) => {
+      arena.safehouse.lightsActive = e.target.checked;
+      arena.recalculateHeat();
+    });
+  }
+  const bHorde = document.getElementById('btnSpawnHorde');
+  if (bHorde) {
+    bHorde.addEventListener('click', () => {
+      if (arena) for (let i = 0; i < 8; i++) arena.spawnZombie('Swarm');
+      if (window.game3D) for (let i = 0; i < 6; i++) window.game3D.spawnZombieArchetype('Swarm');
+      window.showToast("⚠️ Aggression Horde Spawned (Sound-Adapted Swarmers)!", "#e63946");
+      if (window.horrorAudio) window.horrorAudio.playGunshot();
+    });
+  }
+  const bReset = document.getElementById('btnResetArena');
+  if (bReset) {
+    bReset.addEventListener('click', () => {
+      if (arena) {
+        arena.initEntities();
+        arena.player.infection = 0;
+      }
+      const infBar = document.getElementById('hudInfectionBar');
+      if (infBar) infBar.style.width = '0%';
+      const tickInf = document.getElementById('tickerInfection');
+      if (tickInf) tickInf.textContent = '0.0%';
+      window.showToast("Simulation Reset", "#00f5d4");
+    });
+  }
 
   // ==========================================================================
   // TAB 2: DAG GRAPH VISUALIZER
