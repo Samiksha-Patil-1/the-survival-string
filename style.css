@@ -462,6 +462,175 @@ body.dark-theme {
   100% { transform: translateX(-50%) scale(0.98); }
 }
 
+/* Hunted Warning Banner Alert */
+.hunted-warning-banner {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(180, 10, 25, 0.92);
+  border: 2px solid #ff0044;
+  color: #fff;
+  padding: 8px 24px;
+  border-radius: 24px;
+  font-family: var(--font-tech);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 0 25px rgba(255, 0, 68, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 75;
+  pointer-events: none;
+  animation: warningFlash 0.6s infinite alternate;
+}
+
+@keyframes warningFlash {
+  from { transform: translateX(-50%) scale(0.98); box-shadow: 0 0 15px rgba(255, 0, 68, 0.5); }
+  to { transform: translateX(-50%) scale(1.04); box-shadow: 0 0 35px rgba(255, 0, 68, 1.0); }
+}
+
+/* Red Damage Screen Flash Overlay */
+.damage-flash-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 65;
+  opacity: 0;
+  transition: opacity 0.08s ease;
+  box-shadow: inset 0 0 120px rgba(230, 57, 70, 0.9);
+  background: rgba(230, 57, 70, 0.18);
+}
+
+/* Game Over / Victory / Replay Overlay */
+.game-over-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 6, 10, 0.94);
+  backdrop-filter: blur(14px);
+  z-index: 95;
+  animation: fadeIn 0.3s ease;
+}
+
+.game-over-card {
+  background: linear-gradient(135deg, rgba(24, 12, 18, 0.98), rgba(10, 14, 22, 0.98));
+  border: 2px solid var(--accent-crimson);
+  box-shadow: 0 0 50px rgba(230, 57, 70, 0.4), 0 20px 60px rgba(0, 0, 0, 0.95);
+  border-radius: var(--radius-lg);
+  padding: 32px 36px;
+  max-width: 580px;
+  width: 92%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.go-badge {
+  font-family: var(--font-tech);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent-crimson);
+  background: rgba(230, 57, 70, 0.15);
+  border: 1px solid rgba(230, 57, 70, 0.4);
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+.go-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #fff;
+  text-shadow: 0 0 25px rgba(230, 57, 70, 0.7);
+  line-height: 1.2;
+}
+
+.go-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.go-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
+  width: 100%;
+}
+
+.go-stat-item {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.go-stat-lbl {
+  font-family: var(--font-tech);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.go-stat-val {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.go-stat-val.highlight {
+  color: var(--accent-amber);
+}
+
+.go-stat-val.infection {
+  color: var(--accent-crimson);
+}
+
+.go-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.replay-primary-btn {
+  background: linear-gradient(90deg, #e63946, #ff0055);
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-tech);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 0 30px rgba(230, 57, 70, 0.6);
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.replay-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 45px rgba(230, 57, 70, 0.9);
+}
+
 /* Click-To-Play / Start Simulation Overlay */
 .click-to-play-overlay {
   position: absolute;

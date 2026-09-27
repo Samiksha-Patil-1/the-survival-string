@@ -119,6 +119,54 @@
             Press E to Interact
           </div>
 
+          <!-- Hunted Warning Banner -->
+          <div id="huntedWarningBanner" class="hunted-warning-banner" style="display: none;">
+            <span class="warning-pulse-icon">⚠️</span>
+            <span id="huntedWarningText">ALERT: ZOMBIE HUNTING YOU!</span>
+          </div>
+
+          <!-- Red Damage Screen Flash Vignette -->
+          <div id="damageFlashOverlay" class="damage-flash-overlay"></div>
+
+          <!-- Game Over / Victory / Replay Modal -->
+          <div id="gameOverModal" class="game-over-overlay" style="display: none;">
+            <div class="game-over-card">
+              <div class="go-badge" id="goBadge">STATUS: HUNTED & CONSUMED</div>
+              <h1 class="go-title" id="goTitle">SURVIVAL TERMINATED</h1>
+              <p class="go-desc" id="goDesc">You were hunted down and overwhelmed by District 4 mutants.</p>
+              
+              <div class="go-stats-grid">
+                <div class="go-stat-item">
+                  <span class="go-stat-lbl">DAYS SURVIVED</span>
+                  <span class="go-stat-val" id="goStatDays">1</span>
+                </div>
+                <div class="go-stat-item">
+                  <span class="go-stat-lbl">ZOMBIES ELIMINATED</span>
+                  <span class="go-stat-val highlight" id="goStatKills">0</span>
+                </div>
+                <div class="go-stat-item">
+                  <span class="go-stat-lbl">FINAL INFECTION</span>
+                  <span class="go-stat-val infection" id="goStatInfection">0.0%</span>
+                </div>
+                <div class="go-stat-item">
+                  <span class="go-stat-lbl">BASE HEAT RADIUS</span>
+                  <span class="go-stat-val" id="goStatHeat">90m</span>
+                </div>
+              </div>
+
+              <div class="go-actions">
+                <button id="btnReplayGame" class="replay-primary-btn">
+                  <span class="btn-replay-icon">↺</span>
+                  <span>REPLAY MISSION (START FRESH RUN)</span>
+                </button>
+                <button id="btnExploreGraphFromDeath" class="cyber-btn">
+                  <span>🕸️</span>
+                  <span>INSPECT SURVIVAL STRING DAG</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Click To Play / Enter Survival Mode Overlay -->
           <div id="clickToPlayOverlay" class="click-to-play-overlay">
             <div class="overlay-modal">

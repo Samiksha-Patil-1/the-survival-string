@@ -100,6 +100,10 @@ class SurvivalGame3D {
     this.swingAnim = 0;
     this.currentInteraction = null;
     this.hasStartedGame = false;
+    this.zombiesKilled = 0;
+    this.isGameOver = false;
+    this.lastHuntedAlertTime = 0;
+    this._huntedBannerTimer = null;
 
     this.initScene();
     this.initLighting();
@@ -782,7 +786,7 @@ class SurvivalGame3D {
   }
 
   attack() {
-    if (this.cameraMode === 'drone') return;
+    if (this.cameraMode === 'drone' || this.isGameOver) return;
 
     if (this.playerStats.currentWeapon === 'pistol') {
       if (this.playerStats.ammo <= 0) {
@@ -797,38 +801,125 @@ class SurvivalGame3D {
         this.weaponObj.position.z += 0.16;
         setTimeout(() => { if (this.weaponObj) this.weaponObj.position.z -= 0.16; }, 70);
       }
-      this.checkHitscanHit(45, 50);
+      // 70 damage = 1-shot kill on standard zombies (50 HP) & Ambushers (35 HP)
+      this.checkHitscanHit(70, 80);
     } else {
       this.playerStats.isAttacking = true;
       this.playerStats.noiseLevel = 25;
       this.swingAnim = 1.0;
       if (window.horrorAudio) window.horrorAudio.playHeartbeat();
-      this.checkHitscanHit(120, 6);
+      // 120 damage = 1-hit kill in melee range
+      this.checkHitscanHit(120, 7.5);
     }
   }
 
   checkHitscanHit(damage, range) {
-    for (let i = this.zombies.length - 1; i >= 0; i--) {
-      const z = this.zombies[i];
-      const dist = this.playerGroup.position.distanceTo(z.mesh.position);
+    const camPos = this.camera.position.clone();
+    const camDir = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).normalize();
 
-      if (dist < range) {
-        z.hp -= damage;
-        z.state = 'chase';
-        this.showHitMarker();
+    let targetZombie = null;
+    let closestDist = range;
 
-        if (z.hp <= 0) {
-          z.mesh.rotation.x = Math.PI / 2;
-          z.mesh.position.y = 0.2;
-          setTimeout(() => {
-            this.scene.remove(z.mesh);
-            this.zombies.splice(i, 1);
-            setTimeout(() => this.spawnZombieArchetype(), 5000);
-          }, 3000);
-          if (window.showToast) window.showToast(`Zombie Eliminated (${z.type})!`, "#ff9e00");
-        }
-        break;
+    for (let z of this.zombies) {
+      if (z.isDead || z.hp <= 0) continue;
+
+      const zChestPos = z.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0));
+      const toZombie = zChestPos.clone().sub(camPos);
+      const dist = toZombie.length();
+
+      if (dist > range) continue;
+
+      toZombie.normalize();
+      const dot = camDir.dot(toZombie);
+
+      // Angle from crosshair sightline
+      const angle = Math.acos(Math.min(1, Math.max(-1, dot)));
+      const lateralDist = Math.sin(angle) * dist;
+
+      // Generous hit condition: within ~24 deg cone (dot > 0.85) AND within 2.4 meters lateral distance,
+      // or if very close range (< 4.5m) and in front (dot > 0.45)
+      const isAimHit = (dot > 0.85 && lateralDist < 2.4) || (dist < 4.5 && dot > 0.45);
+
+      if (isAimHit && dist < closestDist) {
+        closestDist = dist;
+        targetZombie = z;
       }
+    }
+
+    if (targetZombie) {
+      const z = targetZombie;
+      z.hp -= damage;
+      z.state = 'chase';
+      this.triggerHuntedWarning(z.type);
+      this.showHitMarker();
+      if (window.horrorAudio) window.horrorAudio.playZombieHit();
+
+      // Damage Flash on Zombie Mesh (turns bright red for 150ms)
+      z.mesh.traverse(child => {
+        if (child.isMesh && child.material) {
+          if (!child._origColor) child._origColor = child.material.color ? child.material.color.getHex() : 0x64748b;
+          child.material.color = new THREE.Color(0xff2222);
+          setTimeout(() => {
+            if (child.material) child.material.color = new THREE.Color(child._origColor);
+          }, 150);
+        }
+      });
+
+      if (z.hp <= 0 && !z.isDead) {
+        z.isDead = true;
+        this.zombiesKilled++;
+        if (window.horrorAudio) window.horrorAudio.playZombieDeath();
+
+        // Death collapse animation
+        z.mesh.rotation.x = Math.PI / 2;
+        z.mesh.position.y = 0.25;
+
+        if (window.showToast) {
+          window.showToast(`💀 Zombie Eliminated (${z.type})! [Total Kills: ${this.zombiesKilled}]`, "#00f5d4");
+        }
+
+        setTimeout(() => {
+          this.scene.remove(z.mesh);
+          this.zombies = this.zombies.filter(item => item !== z);
+          setTimeout(() => {
+            if (!this.isGameOver) this.spawnZombieArchetype();
+          }, 4500);
+        }, 2200);
+      }
+    }
+  }
+
+  triggerHuntedWarning(zombieType = 'Mutant') {
+    const banner = document.getElementById('huntedWarningBanner');
+    const textEl = document.getElementById('huntedWarningText');
+    const now = performance.now();
+
+    if (banner && textEl) {
+      textEl.textContent = `⚠️ ALERT: ${zombieType.toUpperCase()} IS HUNTING YOU!`;
+      banner.style.display = 'flex';
+      clearTimeout(this._huntedBannerTimer);
+      this._huntedBannerTimer = setTimeout(() => {
+        banner.style.display = 'none';
+      }, 4000);
+    }
+
+    if (now - this.lastHuntedAlertTime > 5000) {
+      this.lastHuntedAlertTime = now;
+      if (window.horrorAudio) {
+        window.horrorAudio.playHuntedAlert();
+        window.horrorAudio.playZombieGrowl();
+      }
+      if (window.showToast) {
+        window.showToast(`⚠️ WARNING: A ${zombieType} has detected your scent and is hunting you!`, "#e63946");
+      }
+    }
+  }
+
+  triggerDamageFlash() {
+    const flash = document.getElementById('damageFlashOverlay');
+    if (flash) {
+      flash.style.opacity = '1';
+      setTimeout(() => { flash.style.opacity = '0'; }, 180);
     }
   }
 
@@ -1003,11 +1094,13 @@ class SurvivalGame3D {
   }
 
   updateZombies(dt) {
+    if (this.isGameOver) return;
     const pPos = this.playerGroup.position;
     const basePos = new THREE.Vector3(-40, 0, -40);
+    let activeHuntingCount = 0;
 
     for (let z of this.zombies) {
-      if (z.hp <= 0) continue;
+      if (z.isDead || z.hp <= 0) continue;
 
       const distP = z.mesh.position.distanceTo(pPos);
       const distB = z.mesh.position.distanceTo(basePos);
@@ -1016,12 +1109,21 @@ class SurvivalGame3D {
         z.state = 'drawn_to_heat';
       }
 
-      let alertRange = 30;
+      let alertRange = 32;
       if (this.playerStats.isCrouching) alertRange = 12;
-      if (this.playerStats.isSprinting) alertRange = 50;
+      if (this.playerStats.isSprinting) alertRange = 52;
       if (this.playerStats.noiseLevel > 75) alertRange = 95;
 
-      if (distP < alertRange) z.state = 'chase';
+      if (distP < alertRange) {
+        if (z.state !== 'chase') {
+          z.state = 'chase';
+          this.triggerHuntedWarning(z.type);
+        }
+      }
+
+      if (z.state === 'chase' && distP < 45) {
+        activeHuntingCount++;
+      }
 
       let target = z.wanderTarget;
       if (z.state === 'chase') target = pPos;
@@ -1039,11 +1141,136 @@ class SurvivalGame3D {
         z.armR.rotation.x = -0.8 - Math.sin(z.animTime) * 0.4;
       }
 
+      // Close combat contact: Zombie actively strikes player
       if (distP < 2.0) {
-        this.playerStats.health = Math.max(0, this.playerStats.health - dt * 20);
-        this.playerStats.infection = Math.min(100, this.playerStats.infection + dt * 10);
+        this.playerStats.health = Math.max(0, this.playerStats.health - dt * 25);
+        this.playerStats.infection = Math.min(100, this.playerStats.infection + dt * 12);
         if (window.setGlobalInfection) window.setGlobalInfection(this.playerStats.infection);
+
+        this.triggerDamageFlash();
+        if (window.horrorAudio && Math.random() < 0.12) {
+          window.horrorAudio.playPlayerDamage();
+        }
+
+        // Check Death Condition: Player Hunted & Overwhelmed
+        if (this.playerStats.health <= 0 || this.playerStats.infection >= 100) {
+          this.handleGameOver(false, z.type);
+          return;
+        }
       }
+    }
+
+    // Toggle hunted warning banner
+    const banner = document.getElementById('huntedWarningBanner');
+    if (banner) {
+      if (activeHuntingCount > 0 && !this.isGameOver) {
+        banner.style.display = 'flex';
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+  }
+
+  handleGameOver(isVictory = false, killerType = null) {
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+
+    if (document.exitPointerLock) {
+      try { document.exitPointerLock(); } catch (e) {}
+    }
+    this.mouse.isLocked = false;
+
+    const modal = document.getElementById('gameOverModal');
+    const badge = document.getElementById('goBadge');
+    const title = document.getElementById('goTitle');
+    const desc = document.getElementById('goDesc');
+    const daysEl = document.getElementById('goStatDays');
+    const killsEl = document.getElementById('goStatKills');
+    const infEl = document.getElementById('goStatInfection');
+    const heatEl = document.getElementById('goStatHeat');
+
+    if (badge) {
+      badge.textContent = isVictory ? "STATUS: EXTRACTION SUCCESSFUL" : "STATUS: HUNTED & KILLED IN ACTION";
+      badge.style.color = isVictory ? "var(--accent-cyan)" : "var(--accent-crimson)";
+      badge.style.borderColor = isVictory ? "var(--accent-cyan)" : "var(--accent-crimson)";
+    }
+
+    if (title) {
+      title.textContent = isVictory ? "SURVIVAL MISSION ACCOMPLISHED" : "YOU WERE HUNTED DOWN";
+      title.style.color = isVictory ? "var(--accent-cyan)" : "#fff";
+    }
+
+    if (desc) {
+      if (isVictory) {
+        desc.textContent = "Flight Zulu-9 extracted Alexei with Dr. Evelyn's synthesis vaccine! Humanity will endure.";
+      } else {
+        const kName = killerType ? `${killerType} Zombie` : "the Mutant Horde";
+        desc.textContent = `You were detected, hunted down, and mauled by a ${kName} in District 4.`;
+      }
+    }
+
+    if (daysEl) daysEl.textContent = this.currentDay;
+    if (killsEl) killsEl.textContent = this.zombiesKilled;
+    if (infEl) infEl.textContent = this.playerStats.infection.toFixed(1) + "%";
+    if (heatEl) heatEl.textContent = this.baseHeat.radius.toFixed(0) + "m";
+
+    if (modal) modal.style.display = 'flex';
+
+    if (window.horrorAudio) {
+      window.horrorAudio.playPlayerDamage();
+      window.horrorAudio.playZombieGrowl();
+    }
+  }
+
+  replayGame() {
+    this.isGameOver = false;
+    this.zombiesKilled = 0;
+    this.playerStats.health = 100;
+    this.playerStats.stamina = 100;
+    this.playerStats.hunger = 90;
+    this.playerStats.thirst = 85;
+    this.playerStats.infection = 0;
+    this.playerStats.ammo = this.playerStats.maxAmmo;
+    this.playerStats.isCrouching = false;
+    this.playerStats.isSprinting = false;
+    this.playerStats.isAttacking = false;
+
+    this.currentDay = 1;
+    this.gameTime = 10.0;
+    this.yaw = 0;
+    this.pitch = 0;
+
+    // Reset player position to safehouse entrance
+    this.playerGroup.position.set(-25, 0, -10);
+
+    // Clear and respawn fresh zombies
+    for (let z of this.zombies) {
+      this.scene.remove(z.mesh);
+    }
+    this.zombies = [];
+    this.initZombies();
+
+    // Reset base heat
+    this.baseHeat.generatorActive = true;
+    this.updateHeatDome();
+
+    // Reset infection visual effects
+    if (window.setGlobalInfection) window.setGlobalInfection(0);
+
+    // Hide modals
+    const modal = document.getElementById('gameOverModal');
+    if (modal) modal.style.display = 'none';
+
+    const banner = document.getElementById('huntedWarningBanner');
+    if (banner) banner.style.display = 'none';
+
+    // Lock pointer to jump right back in
+    if (this.renderer && this.renderer.domElement) {
+      try { this.renderer.domElement.requestPointerLock(); } catch (e) {}
+    }
+
+    if (window.showToast) {
+      window.showToast("↺ Mission Restarted: Day 1 begins. Stay alive, Alexei!", "#00f5d4");
     }
   }
 

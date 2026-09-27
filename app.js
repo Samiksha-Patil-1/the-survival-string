@@ -138,6 +138,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       window.showToast("🛸 DRONE FLIGHT ACTIVE: WASD to fly across the city, Space/Shift for Altitude!", "#00f5d4");
     });
+  // Hook Replay & Explore Buttons in Game Over Modal
+  const btnReplay = document.getElementById('btnReplayGame');
+  if (btnReplay) {
+    btnReplay.addEventListener('click', () => {
+      if (window.game3D) window.game3D.replayGame();
+    });
+  }
+
+  const btnExploreDeath = document.getElementById('btnExploreGraphFromDeath');
+  if (btnExploreDeath) {
+    btnExploreDeath.addEventListener('click', () => {
+      const gModal = document.getElementById('gameOverModal');
+      if (gModal) gModal.style.display = 'none';
+      document.querySelector('[data-tab="stringTab"]')?.click();
+    });
   }
 
   // 4. Start 2D Tactical Arena Simulation (if canvas present)
