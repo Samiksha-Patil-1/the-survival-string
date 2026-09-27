@@ -138,6 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       window.showToast("🛸 DRONE FLIGHT ACTIVE: WASD to fly across the city, Space/Shift for Altitude!", "#00f5d4");
     });
+  }
+
   // Hook Replay & Explore Buttons in Game Over Modal
   const btnReplay = document.getElementById('btnReplayGame');
   if (btnReplay) {
