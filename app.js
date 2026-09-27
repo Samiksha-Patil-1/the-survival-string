@@ -126,6 +126,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Quick 3D Toolbar Button Listeners
+  const btnDrone = document.getElementById('btnToggleDrone');
+  if (btnDrone) {
+    btnDrone.addEventListener('click', () => {
+      if (!window.game3D) return;
+      window.game3D.cameraMode = window.game3D.cameraMode === 'drone' ? 'fps' : 'drone';
+      if (window.game3D.cameraMode === 'drone') {
+        window.game3D.drone.position.set(window.game3D.playerGroup.position.x, 85, window.game3D.playerGroup.position.z + 40);
+        window.showToast("🛸 DRONE FLIGHT ACTIVE: Fly across the city! (WASD + Space/Shift)", "#00f5d4");
+        btnDrone.classList.add('active');
+      } else {
+        window.showToast("Ground View Restored", "#ff9e00");
+        btnDrone.classList.remove('active');
+      }
+    });
+  }
+
+  const btnCam = document.getElementById('btnToggleCamView');
+  if (btnCam) {
+    btnCam.addEventListener('click', () => {
+      if (!window.game3D) return;
+      window.game3D.cameraMode = window.game3D.cameraMode === 'fps' ? 'tps' : 'fps';
+      window.showToast(`View Mode: ${window.game3D.cameraMode.toUpperCase()}`, "#ff9e00");
+    });
+  }
+
+  const btnPistol = document.getElementById('btnEquipPistol');
+  const btnBat = document.getElementById('btnEquipBat');
+  if (btnPistol && btnBat) {
+    btnPistol.addEventListener('click', () => {
+      if (window.game3D) window.game3D.switchWeapon('pistol');
+      btnPistol.classList.add('active');
+      btnBat.classList.remove('active');
+    });
+    btnBat.addEventListener('click', () => {
+      if (window.game3D) window.game3D.switchWeapon('bat');
+      btnBat.classList.add('active');
+      btnPistol.classList.remove('active');
+    });
+  }
+
   // ==========================================================================
   // TAB 2: DAG GRAPH VISUALIZER
   // ==========================================================================

@@ -330,6 +330,76 @@ body.dark-theme {
   display: block;
 }
 
+/* Top Compass Bar (PUBG / Free Fire Style) */
+.top-compass-bar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 20, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-tech);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-amber);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 60;
+}
+
+.compass-deg {
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+/* Quick Action Toolbar inside 3D Viewport */
+.hud-top-actions {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 60;
+}
+
+.action-pill-btn {
+  background: rgba(10, 14, 20, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-tech);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.action-pill-btn:hover {
+  background: rgba(255, 158, 0, 0.15);
+  border-color: var(--accent-amber);
+  color: #fff;
+}
+
+.action-pill-btn.active {
+  background: rgba(0, 245, 212, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
 /* Center Crosshair */
 .crosshair-center {
   position: absolute;
@@ -347,6 +417,22 @@ body.dark-theme {
   background: rgba(255, 255, 255, 0.85);
   border-radius: 50%;
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+
+/* Red Hit Marker Overlay (PUBG / Free Fire) */
+.hit-marker-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--accent-crimson);
+  text-shadow: 0 0 8px var(--accent-crimson-glow);
+  opacity: 0;
+  transition: opacity 0.05s ease;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Proximity Interaction Prompt */

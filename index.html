@@ -94,9 +94,24 @@
     <section id="game3DTab" class="view-panel active">
       <div class="game3d-layout">
         <div class="viewport-3d-wrapper" id="game3DContainer">
-          <!-- Crosshair -->
+          <!-- Top Compass Bar (PUBG / Free Fire Style) -->
+          <div class="top-compass-bar">
+            <span class="compass-icon">🧭</span>
+            <span id="hudCompassBar" class="compass-deg">0° | N</span>
+          </div>
+
+          <!-- Quick Action Toolbar -->
+          <div class="hud-top-actions">
+            <button id="btnToggleDrone" class="action-pill-btn"><span class="pill-icon">🛸</span> FLY CITY DRONE [T]</button>
+            <button id="btnToggleCamView" class="action-pill-btn"><span class="pill-icon">👁️</span> 1ST/3RD VIEW [V]</button>
+            <button id="btnEquipPistol" class="action-pill-btn active"><span class="pill-icon">🔫</span> PISTOL [1]</button>
+            <button id="btnEquipBat" class="action-pill-btn"><span class="pill-icon">🏏</span> BARBED BAT [2]</button>
+          </div>
+
+          <!-- Center Crosshair & Hit Marker -->
           <div class="crosshair-center">
             <span class="ch-dot"></span>
+            <span id="hitMarkerCrosshair" class="hit-marker-overlay">✕</span>
           </div>
 
           <!-- Interaction Prompt Overlay -->
